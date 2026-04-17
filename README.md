@@ -8,6 +8,14 @@
 </div>
 
 <div align="center">
+  <img width="500em" src="img/content01.png">
+</div>
+
+<div align="center">
+  <hr width="500em" />
+</div>
+
+<div align="center">
   <a href="https://github.com/luizangelomartins">
   <img width="500em" src="https://github-readme-stats.vercel.app/api?username=luizangelomartins&theme=dark&show_icons=true&hide_border=true&count_private=true&locale=pt-br">
 </div>
