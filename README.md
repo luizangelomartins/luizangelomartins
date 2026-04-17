@@ -62,5 +62,70 @@
 </div>
 
 <div align="center">
+  <table>
+    <tr>
+      <td align="center">
+        <img height="45" src="https://img.shields.io/badge/IIS-0078D4?style=for-the-badge&logo=windows&logoColor=white"><br>
+        <sub>Hospedagem local de aplicações, sites, bindings e diretórios físicos</sub>
+      </td>
+      <td align="center">
+        <img height="45" src="https://img.shields.io/badge/Firewall-444444?style=for-the-badge&logo=windows&logoColor=white"><br>
+        <sub>Configuração de regras de acesso e liberação de portas em rede/local</sub>
+      </td>
+      <td align="center">
+        <img height="45" src="https://img.shields.io/badge/.NET_API-512BD4?style=for-the-badge&logo=dotnet&logoColor=white"><br>
+        <sub>Execução e testes de APIs .NET em ambiente local</sub>
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <img height="45" src="https://img.shields.io/badge/npx-000000?style=for-the-badge&logo=npm&logoColor=white"><br>
+        <sub>Servidor local para frontend estático e integração com API</sub>
+      </td>
+      <td align="center">
+        <img height="45" src="https://img.shields.io/badge/Power%20BI-F2C811?style=for-the-badge&logo=powerbi&logoColor=black"><br>
+        <sub>Criação de relatórios e dashboards básicos</sub>
+      </td>
+      <td align="center">
+        <img height="45" src="https://img.shields.io/badge/Telerik-8A2BE2?style=for-the-badge"><br>
+        <sub>Uso de componentes UI para construção de interfaces web</sub>
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <img height="45" src="https://img.shields.io/badge/Visual%20Studio-5C2D91?style=for-the-badge&logo=visualstudio&logoColor=white"><br>
+        <sub>Desenvolvimento de aplicações .NET e projetos desktop/web</sub>
+      </td>
+      <td align="center">
+        <img height="45" src="https://img.shields.io/badge/VS%20Code-007ACC?style=for-the-badge&logo=visualstudiocode&logoColor=white"><br>
+        <sub>Editor para desenvolvimento web, scripts e frontend</sub>
+      </td>
+      <td align="center">
+        <img height="45" src="https://img.shields.io/badge/SSMS-CC2927?style=for-the-badge&logo=microsoftsqlserver&logoColor=white"><br>
+        <sub>Gerenciamento e consultas em SQL Server</sub>
+      </td>
+    </tr>
+    <tr>
+      <td align="center">
+        <img height="45" src="https://img.shields.io/badge/DBeaver-372923?style=for-the-badge&logo=databricks&logoColor=white"><br>
+        <sub>Acesso e manipulação de bancos (Firebird e outros)</sub>
+      </td>
+      <td align="center">
+        <img height="45" src="https://img.shields.io/badge/HeidiSQL-4CAF50?style=for-the-badge"><br>
+        <sub>Gerenciamento de bancos relacionais e consultas SQL</sub>
+      </td>
+      <td align="center">
+        <img height="45" src="https://img.shields.io/badge/Insomnia-5849BE?style=for-the-badge&logo=insomnia&logoColor=white"><br>
+        <sub>Testes e validação de APIs REST</sub>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div align="center">
+  <hr width="500em" />
+</div>
+
+<div align="center">
   <img src="https://raw.githubusercontent.com/luizangelomartins/luizangelomartins/output/github-contribution-grid-snake.svg">
 </div>
