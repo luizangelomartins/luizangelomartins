@@ -10,15 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Generate snake animation
+      - name: Generate snake
         uses: Platane/snk@v3
         with:
           github_user_name: luizangelomartins
           outputs: |
-            dist/github-contribution-grid-snake.svg?palette=custom
-
-          color_snake: "#4da3ff"
-          color_dots: "#151515,#151515,#151515,#79ff97,#79ff97"
+            dist/github-contribution-grid-snake.svg?color_snake=%234da3ff&color_dots=%23151515,%23151515,%2379ff97,%2379ff97,%2379ff97
 
       - name: Push to output branch
         uses: peaceiris/actions-gh-pages@v4
