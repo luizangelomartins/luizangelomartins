@@ -1,0 +1,64 @@
+name: Atualizar Top Languages SVG
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Gerar SVG
+        run: |
+          mkdir -p svg
+
+          USUARIO="luizangelomartins"
+
+          REPOS=$(curl -s https://api.github.com/users/$USUARIO/repos?per_page=100)
+
+          echo "$REPOS" | jq -r '.[].languages_url' | while read url; do
+            curl -s "$url"
+          done | jq -s 'add' > langs.json
+
+          if [ ! -s langs.json ]; then
+            echo "{}" > langs.json
+          fi
+
+          TOTAL=$(jq 'to_entries | map(.value) | add' langs.json)
+
+          jq -r 'to_entries | sort_by(.value) | reverse | .[0:5][] | "\(.key) \(.value)"' langs.json > top.txt
+
+          printf "<svg width='720' height='260' xmlns='http://www.w3.org/2000/svg'>" > svg/langs.svg
+          printf "<rect width='100%%' height='100%%' rx='18' fill='#0d1117'/>" >> svg/langs.svg
+
+          printf "<text x='25' y='40' fill='#ffffff' font-size='26' font-weight='bold'>Top Languages</text>" >> svg/langs.svg
+          printf "<text x='25' y='62' fill='#8b949e' font-size='13'>Atualizado via GitHub Actions</text>" >> svg/langs.svg
+
+          Y=110
+
+          while read lang count; do
+            PCT=$(awk "BEGIN {printf \"%.1f\", ($count/$TOTAL)*100}")
+
+            printf "<text x='25' y='%s' fill='#58a6ff' font-size='18'>%s</text>" "$Y" "$lang" >> svg/langs.svg
+            printf "<text x='200' y='%s' fill='#8b949e' font-size='18'>%s%%</text>" "$Y" "$PCT" >> svg/langs.svg
+
+            Y=$((Y+28))
+          done < top.txt
+
+          printf "</svg>" >> svg/langs.svg
+
+      - name: Commit e push
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add svg/langs.svg
+          git commit -m "update svg" || exit 0
+          git push
