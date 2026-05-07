@@ -1,8 +1,8 @@
-name: Update GitHub Stats SVG
+name: Generate GitHub Profile Stats
 
 on:
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "0 */6 * * *"
   workflow_dispatch:
 
 jobs:
@@ -17,18 +17,27 @@ jobs:
         run: |
           USER="luizangelomartins"
 
-          DATA=$(curl -s https://api.github.com/users/$USER)
+          USER_DATA=$(curl -s https://api.github.com/users/$USER)
+          EVENTS=$(curl -s https://api.github.com/users/$USER/events/public)
 
-          REPOS=$(echo "$DATA" | jq '.public_repos')
-          FOLLOWERS=$(echo "$DATA" | jq '.followers')
-          FOLLOWING=$(echo "$DATA" | jq '.following')
+          REPOS=$(echo "$USER_DATA" | jq '.public_repos')
 
-          echo "<svg width='500' height='160' xmlns='http://www.w3.org/2000/svg'>" > stats.svg
+          COMMITS=$(echo "$EVENTS" | jq '[.[] | select(.type=="PushEvent")] | length')
+          FORKS=$(echo "$EVENTS" | jq '[.[] | select(.type=="ForkEvent")] | length')
+          CREATES=$(echo "$EVENTS" | jq '[.[] | select(.type=="CreateEvent")] | length')
+
+          echo "<svg width='600' height='260' xmlns='http://www.w3.org/2000/svg'>" > stats.svg
           echo "<rect width='100%' height='100%' fill='#0d1117'/>" >> stats.svg
-          echo "<text x='20' y='40' fill='#58a6ff' font-size='20'>GitHub Stats</text>" >> stats.svg
-          echo "<text x='20' y='80' fill='#c9d1d9' font-size='16'>Repos: $REPOS</text>" >> stats.svg
-          echo "<text x='20' y='110' fill='#c9d1d9' font-size='16'>Followers: $FOLLOWERS</text>" >> stats.svg
-          echo "<text x='20' y='140' fill='#c9d1d9' font-size='16'>Following: $FOLLOWING</text>" >> stats.svg
+
+          echo "<text x='20' y='40' fill='#58a6ff' font-size='22' font-weight='bold'>GitHub Activity Dashboard</text>" >> stats.svg
+
+          echo "<text x='20' y='90' fill='#c9d1d9' font-size='16'>📦 Repositories: $REPOS</text>" >> stats.svg
+          echo "<text x='20' y='130' fill='#c9d1d9' font-size='16'>⚡ Push Events (recent): $COMMITS</text>" >> stats.svg
+          echo "<text x='20' y='170' fill='#c9d1d9' font-size='16'>🔁 Forks: $FORKS</text>" >> stats.svg
+          echo "<text x='20' y='210' fill='#c9d1d9' font-size='16'>🧱 Creates: $CREATES</text>" >> stats.svg
+
+          echo "<text x='20' y='245' fill='#7ee787' font-size='14'>Auto-updated every 6 hours</text>" >> stats.svg
+
           echo "</svg>" >> stats.svg
 
       - name: Commit changes
@@ -36,5 +45,5 @@ jobs:
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add stats.svg
-          git commit -m "update stats" || exit 0
+          git commit -m "update profile stats" || exit 0
           git push
