@@ -24,9 +24,9 @@
   <hr width="500em" />
 </div>
 
-<div align="center">
+<div align="center" border-radius:1>
   <a href="https://github.com/luizangelomartins">
-  <img width="500em" src="https://github-readme-streak-stats.herokuapp.com/?user=luizangelomartins&theme=dark&hide_border=true&locale=pt-br">
+  <img src="./svg/streak.svg" width="600">
 </div>
 
 <div align="center">
