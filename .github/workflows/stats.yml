@@ -15,6 +15,8 @@ jobs:
 
       - name: Gerar stats SVG
         run: |
+          mkdir -p SVG
+
           USUARIO="luizangelomartins"
 
           DADOS=$(curl -s https://api.github.com/users/$USUARIO)
@@ -25,26 +27,26 @@ jobs:
           FORKS=$(echo "$EVENTOS" | jq '[.[] | select(.type=="ForkEvent")] | length')
           ISSUES=$(echo "$EVENTOS" | jq '[.[] | select(.type=="IssuesEvent")] | length')
 
-          printf "<svg width='600' height='260' xmlns='http://www.w3.org/2000/svg'>" > stats.svg
-          printf "<rect width='100%%' height='100%%' rx='14' fill='#0d1117'/>" >> stats.svg
+          printf "<svg width='600' height='260' xmlns='http://www.w3.org/2000/svg'>" > SVG/stats.svg
+          printf "<rect width='100%%' height='100%%' rx='14' fill='#0d1117'/>" >> SVG/stats.svg
 
-          printf "<text x='25' y='40' fill='#ffffff' font-size='20' font-weight='bold'>Painel de Atividade</text>" >> stats.svg
-          printf "<text x='25' y='70' fill='#8b949e' font-size='12'>Atualizado via GitHub Actions</text>" >> stats.svg
+          printf "<text x='25' y='40' fill='#ffffff' font-size='20' font-weight='bold'>Painel de Atividade</text>" >> SVG/stats.svg
+          printf "<text x='25' y='70' fill='#8b949e' font-size='12'>Atualizado via GitHub Actions</text>" >> SVG/stats.svg
 
-          printf "<line x1='25' y1='85' x2='575' y2='85' stroke='#21262d'/>" >> stats.svg
+          printf "<line x1='25' y1='85' x2='575' y2='85' stroke='#21262d'/>" >> SVG/stats.svg
 
-          printf "<text x='25' y='120' fill='#58a6ff' font-size='16'>Repositórios: %s</text>" "$REPOS" >> stats.svg
-          printf "<text x='25' y='150' fill='#7ee787' font-size='16'>Pushes: %s</text>" "$PUSHES" >> stats.svg
-          printf "<text x='25' y='180' fill='#f1c40f' font-size='16'>Forks: %s</text>" "$FORKS" >> stats.svg
-          printf "<text x='25' y='210' fill='#ff7b72' font-size='16'>Issues: %s</text>" "$ISSUES" >> stats.svg
+          printf "<text x='25' y='120' fill='#58a6ff' font-size='16'>Repositórios: %s</text>" "$REPOS" >> SVG/stats.svg
+          printf "<text x='25' y='150' fill='#7ee787' font-size='16'>Pushes: %s</text>" "$PUSHES" >> SVG/stats.svg
+          printf "<text x='25' y='180' fill='#f1c40f' font-size='16'>Forks: %s</text>" "$FORKS" >> SVG/stats.svg
+          printf "<text x='25' y='210' fill='#ff7b72' font-size='16'>Issues: %s</text>" "$ISSUES" >> SVG/stats.svg
 
-          printf "<text x='25' y='240' fill='#8b949e' font-size='12'>Eventos públicos recentes</text>" >> stats.svg
-          printf "</svg>" >> stats.svg
+          printf "<text x='25' y='240' fill='#8b949e' font-size='12'>Eventos públicos recentes</text>" >> SVG/stats.svg
+          printf "</svg>" >> SVG/stats.svg
 
       - name: Commit e push
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
-          git add stats.svg
-          git commit -m "update stats" || exit 0
+          git add SVG/stats.svg
+          git commit -m "update stats SVG" || exit 0
           git push
