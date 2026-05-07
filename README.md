@@ -28,9 +28,14 @@
   <a href="https://github.com/luizangelomartins">
   <img width="500em" src="https://github-readme-streak-stats.herokuapp.com/?user=luizangelomartins&theme=dark&hide_border=true&locale=pt-br">
 </div>
+
 <div align="center">
+  <hr width="500em" />
+</div>
+
+<div align="center" border-radius:1>
   <a href="https://github.com/luizangelomartins">
-  <img width="500em" src="https://github-readme-stats.vercel.app/api/top-langs/?username=luizangelomartins&theme=dark&show_icons=true&hide_border=true&layout=compact&locale=pt-br">
+  <img src="./svg/langs.svg" width="600">
 </div>
 
 <div align="center">
