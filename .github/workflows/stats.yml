@@ -27,20 +27,37 @@ jobs:
           FORKS=$(echo "$EVENTOS" | jq '[.[] | select(.type=="ForkEvent")] | length')
           ISSUES=$(echo "$EVENTOS" | jq '[.[] | select(.type=="IssuesEvent")] | length')
 
-          printf "<svg width='600' height='260' xmlns='http://www.w3.org/2000/svg'>" > svg/stats.svg
-          printf "<rect width='100%%' height='100%%' rx='14' fill='#0d1117'/>" >> svg/stats.svg
+          printf "<svg width='720' height='240' xmlns='http://www.w3.org/2000/svg'>" > svg/stats.svg
+          printf "<rect width='100%%' height='100%%' rx='18' fill='#0d1117'/>" >> svg/stats.svg
 
-          printf "<text x='25' y='40' fill='#ffffff' font-size='20' font-weight='bold'>Painel de Atividade</text>" >> svg/stats.svg
-          printf "<text x='25' y='70' fill='#8b949e' font-size='12'>Atualizado via GitHub Actions</text>" >> svg/stats.svg
+          # Título
+          printf "<text x='25' y='40' fill='#ffffff' font-size='26' font-weight='bold'>Painel de Atividade</text>" >> svg/stats.svg
+          printf "<text x='25' y='62' fill='#8b949e' font-size='13'>Atualizado via GitHub Actions</text>" >> svg/stats.svg
 
-          printf "<line x1='25' y1='85' x2='575' y2='85' stroke='#21262d'/>" >> svg/stats.svg
+          CARD_Y=85
+          CARD_H=120
+          CARD_W=155
 
-          printf "<text x='25' y='120' fill='#58a6ff' font-size='16'>Repositórios: %s</text>" "$REPOS" >> svg/stats.svg
-          printf "<text x='25' y='150' fill='#7ee787' font-size='16'>Pushes: %s</text>" "$PUSHES" >> svg/stats.svg
-          printf "<text x='25' y='180' fill='#f1c40f' font-size='16'>Forks: %s</text>" "$FORKS" >> svg/stats.svg
-          printf "<text x='25' y='210' fill='#ff7b72' font-size='16'>Issues: %s</text>" "$ISSUES" >> svg/stats.svg
+          # Repositórios
+          printf "<rect x='25' y='%s' width='%s' height='%s' rx='16' fill='#161b22' stroke='#21262d'/>" "$CARD_Y" "$CARD_W" "$CARD_H" >> svg/stats.svg
+          printf "<text x='45' y='125' fill='#58a6ff' font-size='28' font-weight='bold'>%s</text>" "$REPOS" >> svg/stats.svg
+          printf "<text x='45' y='155' fill='#8b949e' font-size='14'>Repos</text>" >> svg/stats.svg
 
-          printf "<text x='25' y='240' fill='#8b949e' font-size='12'>Eventos públicos recentes</text>" >> svg/stats.svg
+          # Pushes
+          printf "<rect x='195' y='%s' width='%s' height='%s' rx='16' fill='#161b22' stroke='#21262d'/>" "$CARD_Y" "$CARD_W" "$CARD_H" >> svg/stats.svg
+          printf "<text x='215' y='125' fill='#7ee787' font-size='28' font-weight='bold'>%s</text>" "$PUSHES" >> svg/stats.svg
+          printf "<text x='215' y='155' fill='#8b949e' font-size='14'>Pushes</text>" >> svg/stats.svg
+
+          # Forks
+          printf "<rect x='365' y='%s' width='%s' height='%s' rx='16' fill='#161b22' stroke='#21262d'/>" "$CARD_Y" "$CARD_W" "$CARD_H" >> svg/stats.svg
+          printf "<text x='385' y='125' fill='#f1c40f' font-size='28' font-weight='bold'>%s</text>" "$FORKS" >> svg/stats.svg
+          printf "<text x='385' y='155' fill='#8b949e' font-size='14'>Forks</text>" >> svg/stats.svg
+
+          # Issues
+          printf "<rect x='535' y='%s' width='%s' height='%s' rx='16' fill='#161b22' stroke='#21262d'/>" "$CARD_Y" "$CARD_W" "$CARD_H" >> svg/stats.svg
+          printf "<text x='555' y='125' fill='#ff7b72' font-size='28' font-weight='bold'>%s</text>" "$ISSUES" >> svg/stats.svg
+          printf "<text x='555' y='155' fill='#8b949e' font-size='14'>Issues</text>" >> svg/stats.svg
+
           printf "</svg>" >> svg/stats.svg
 
       - name: Commit e push
