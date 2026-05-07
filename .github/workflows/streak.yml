@@ -1,0 +1,83 @@
+name: Atualizar Streak + Stats SVG
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Gerar SVG (Streak + Total Contributions)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p svg
+
+          USER="luizangelomartins"
+
+          # 📡 GraphQL (dados oficiais GitHub)
+          curl -s -H "Authorization: bearer $GH_TOKEN" \
+            -X POST https://api.github.com/graphql \
+            -d @- <<EOF > data.json
+          {
+            "query": "query { user(login: \"$USER\") { contributionsCollection { totalCommitContributions contributionCalendar { weeks { contributionDays { date contributionCount } } } } } }"
+          }
+          EOF
+
+          # 🏆 total de contribuições
+          TOTAL=$(jq '.data.user.contributionsCollection.totalCommitContributions' data.json)
+
+          # 📅 flatten dos dias
+          jq -r '.data.user.contributionsCollection.contributionCalendar.weeks[].contributionDays[] | "\(.date) \(.contributionCount)"' data.json \
+            | sort -r > days.txt
+
+          # 🔥 cálculo de streak atual (robusto)
+          STREAK=0
+
+          while read DATE COUNT; do
+            if [ "$COUNT" -gt 0 ]; then
+              STREAK=$((STREAK+1))
+            else
+              break
+            fi
+          done < <(jq -r '.data.user.contributionsCollection.contributionCalendar.weeks[].contributionDays[] | "\(.date) \(.contributionCount)"' data.json | sort -r)
+
+          # 🎨 SVG final
+          cat <<EOF > svg/streak.svg
+          <svg width="520" height="200" xmlns="http://www.w3.org/2000/svg">
+            <rect width="100%" height="100%" rx="18" fill="#0d1117"/>
+
+            <text x="25" y="45" fill="#ffffff" font-size="24" font-weight="bold">
+              GitHub Stats
+            </text>
+
+            <text x="25" y="70" fill="#8b949e" font-size="12">
+              Streak atual e contribuições totais
+            </text>
+
+            <text x="25" y="120" fill="#58a6ff" font-size="42" font-weight="bold">
+              🔥 $STREAK dias
+            </text>
+
+            <text x="25" y="165" fill="#2ea043" font-size="24" font-weight="bold">
+              🏆 $TOTAL contribuições
+            </text>
+          </svg>
+          EOF
+
+      - name: Commit e push
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add svg/streak.svg
+          git commit -m "update streak + stats svg" || exit 0
+          git push
