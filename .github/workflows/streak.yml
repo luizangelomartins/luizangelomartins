@@ -16,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Gerar SVG (Streak + Total Contributions)
+      - name: Gerar SVG (layout dividido)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -24,7 +24,6 @@ jobs:
 
           USER="luizangelomartins"
 
-          # 📡 GraphQL (dados oficiais GitHub)
           curl -s -H "Authorization: bearer $GH_TOKEN" \
             -X POST https://api.github.com/graphql \
             -d @- <<EOF > data.json
@@ -33,16 +32,10 @@ jobs:
           }
           EOF
 
-          # 🏆 total de contribuições
           TOTAL=$(jq '.data.user.contributionsCollection.totalCommitContributions' data.json)
 
-          # 📅 flatten dos dias
-          jq -r '.data.user.contributionsCollection.contributionCalendar.weeks[].contributionDays[] | "\(.date) \(.contributionCount)"' data.json \
-            | sort -r > days.txt
-
-          # 🔥 cálculo de streak atual (robusto)
+          # 🔥 streak
           STREAK=0
-
           while read DATE COUNT; do
             if [ "$COUNT" -gt 0 ]; then
               STREAK=$((STREAK+1))
@@ -51,26 +44,43 @@ jobs:
             fi
           done < <(jq -r '.data.user.contributionsCollection.contributionCalendar.weeks[].contributionDays[] | "\(.date) \(.contributionCount)"' data.json | sort -r)
 
-          # 🎨 SVG final
+          # 🎨 SVG lado a lado
           cat <<EOF > svg/streak.svg
-          <svg width="520" height="200" xmlns="http://www.w3.org/2000/svg">
+          <svg width="600" height="180" xmlns="http://www.w3.org/2000/svg">
+            
+            <!-- fundo -->
             <rect width="100%" height="100%" rx="18" fill="#0d1117"/>
 
-            <text x="25" y="45" fill="#ffffff" font-size="24" font-weight="bold">
-              GitHub Stats
+            <!-- linha divisória -->
+            <line x1="300" y1="25" x2="300" y2="155" stroke="#30363d" stroke-width="2"/>
+
+            <!-- LEFT: STREAK -->
+            <text x="40" y="55" fill="#ffffff" font-size="20" font-weight="bold">
+              🔥 Streak Atual
             </text>
 
-            <text x="25" y="70" fill="#8b949e" font-size="12">
-              Streak atual e contribuições totais
+            <text x="40" y="120" fill="#58a6ff" font-size="44" font-weight="bold">
+              $STREAK dias
             </text>
 
-            <text x="25" y="120" fill="#58a6ff" font-size="42" font-weight="bold">
-              🔥 $STREAK dias
+            <!-- RIGHT: TOTAL -->
+            <text x="340" y="55" fill="#ffffff" font-size="20" font-weight="bold">
+              🏆 Contribuições
             </text>
 
-            <text x="25" y="165" fill="#2ea043" font-size="24" font-weight="bold">
-              🏆 $TOTAL contribuições
+            <text x="340" y="120" fill="#2ea043" font-size="36" font-weight="bold">
+              $TOTAL
             </text>
+
+            <!-- subtítulos -->
+            <text x="40" y="150" fill="#8b949e" font-size="11">
+              sequência atual de atividade
+            </text>
+
+            <text x="340" y="150" fill="#8b949e" font-size="11">
+              total de commits registrados
+            </text>
+
           </svg>
           EOF
 
@@ -79,5 +89,5 @@ jobs:
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add svg/streak.svg
-          git commit -m "update streak + stats svg" || exit 0
+          git commit -m "update split streak svg" || exit 0
           git push
