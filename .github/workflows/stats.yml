@@ -1,0 +1,42 @@
+name: Update GitHub Stats SVG
+
+on:
+  schedule:
+    - cron: "0 0 * * *" # todo dia
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Get GitHub data and generate SVG
+        run: |
+          USER="luizangelomartins"
+
+          DATA=$(curl -s https://api.github.com/users/$USER)
+
+          REPOS=$(echo $DATA | jq '.public_repos')
+          FOLLOWERS=$(echo $DATA | jq '.followers')
+          FOLLOWING=$(echo $DATA | jq '.following')
+
+          cat <<EOF > stats.svg
+<svg width="500" height="160" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" fill="#0d1117"/>
+  <text x="20" y="40" fill="#58a6ff" font-size="20">GitHub Stats</text>
+  <text x="20" y="80" fill="#c9d1d9" font-size="16">Repos: $REPOS</text>
+  <text x="20" y="110" fill="#c9d1d9" font-size="16">Followers: $FOLLOWERS</text>
+  <text x="20" y="140" fill="#c9d1d9" font-size="16">Following: $FOLLOWING</text>
+</svg>
+EOF
+
+      - name: Commit changes
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add stats.svg
+          git commit -m "update stats" || exit 0
+          git push
