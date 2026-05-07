@@ -1,0 +1,19 @@
+<svg width="520" height="200" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100%" height="100%" rx="18" fill="#0d1117"/>
+
+  <text x="25" y="45" fill="#ffffff" font-size="24" font-weight="bold">
+    GitHub Stats
+  </text>
+
+  <text x="25" y="70" fill="#8b949e" font-size="12">
+    Streak atual e contribuições totais
+  </text>
+
+  <text x="25" y="120" fill="#58a6ff" font-size="42" font-weight="bold">
+    🔥 1 dias
+  </text>
+
+  <text x="25" y="165" fill="#2ea043" font-size="24" font-weight="bold">
+    🏆 87 contribuições
+  </text>
+</svg>
