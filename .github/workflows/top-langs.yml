@@ -1,4 +1,4 @@
-name: Atualizar Top Languages SVG
+name: Atualizar Linguagens Mais Usadas SVG
 
 on:
   schedule:
@@ -16,7 +16,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Gerar SVG
+      - name: Gerar SVG de linguagens (cards)
         run: |
           mkdir -p svg
 
@@ -39,18 +39,37 @@ jobs:
           printf "<svg width='720' height='260' xmlns='http://www.w3.org/2000/svg'>" > svg/langs.svg
           printf "<rect width='100%%' height='100%%' rx='18' fill='#0d1117'/>" >> svg/langs.svg
 
-          printf "<text x='25' y='40' fill='#ffffff' font-size='26' font-weight='bold'>Top Languages</text>" >> svg/langs.svg
+          # Título
+          printf "<text x='25' y='40' fill='#ffffff' font-size='26' font-weight='bold'>Linguagens mais usadas</text>" >> svg/langs.svg
           printf "<text x='25' y='62' fill='#8b949e' font-size='13'>Atualizado via GitHub Actions</text>" >> svg/langs.svg
 
-          Y=110
+          # Layout dos cards
+          CARD_W=126
+          CARD_H=140
+          START_X=25
+          START_Y=85
+          GAP=10
+
+          i=0
 
           while read lang count; do
-            PCT=$(awk "BEGIN {printf \"%.1f\", ($count/$TOTAL)*100}")
+            PCT=$(awk "BEGIN {if ($TOTAL>0) printf \"%.1f\", ($count/$TOTAL)*100; else print 0}")
 
-            printf "<text x='25' y='%s' fill='#58a6ff' font-size='18'>%s</text>" "$Y" "$lang" >> svg/langs.svg
-            printf "<text x='200' y='%s' fill='#8b949e' font-size='18'>%s%%</text>" "$Y" "$PCT" >> svg/langs.svg
+            X=$((START_X + i * (CARD_W + GAP)))
 
-            Y=$((Y+28))
+            # Card
+            printf "<rect x='%s' y='%s' width='%s' height='%s' rx='16' fill='#161b22' stroke='#21262d'/>" \
+              "$X" "$START_Y" "$CARD_W" "$CARD_H" >> svg/langs.svg
+
+            # Linguagem
+            printf "<text x='%s' y='%s' fill='#58a6ff' font-size='16' font-weight='bold'>%s</text>" \
+              $((X + 12)) $((START_Y + 55)) "$lang" >> svg/langs.svg
+
+            # Percentual
+            printf "<text x='%s' y='%s' fill='#8b949e' font-size='18'>%s%%</text>" \
+              $((X + 12)) $((START_Y + 95)) "$PCT" >> svg/langs.svg
+
+            i=$((i+1))
           done < top.txt
 
           printf "</svg>" >> svg/langs.svg
@@ -60,5 +79,5 @@ jobs:
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git add svg/langs.svg
-          git commit -m "update svg" || exit 0
+          git commit -m "atualiza svg de linguagens (cards)" || exit 0
           git push
