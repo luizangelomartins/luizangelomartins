@@ -15,10 +15,15 @@
   <hr width="500em" />
 </div>
 
-<div align="center">
+<div align="center" border-radius:1>
   <a href="https://github.com/luizangelomartins">
-  <img width="500em" src="https://github-readme-stats.vercel.app/api?username=luizangelomartins&theme=dark&show_icons=true&hide_border=true&count_private=true&locale=pt-br">
+  <img src="./svg/stats.svg" width="600">
 </div>
+
+<div align="center">
+  <hr width="500em" />
+</div>
+
 <div align="center">
   <a href="https://github.com/luizangelomartins">
   <img width="500em" src="https://github-readme-streak-stats.herokuapp.com/?user=luizangelomartins&theme=dark&hide_border=true&locale=pt-br">
