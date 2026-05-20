@@ -10,18 +10,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Clone photos-steam
-        run: |
-          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/luizangelomartins/photos-steam.git
+      - name: Checkout workflow repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_WRITE }}
 
-      - name: Rotate banner
+      - name: Clone photos-steam (read)
+        run: |
+          git clone https://x-access-token:${{ secrets.GH_READ }}@github.com/luizangelomartins/photos-steam.git
+
+      - name: Rotate banner inside repo
         run: |
           cd photos-steam
 
           git config user.name "github-actions"
           git config user.email "actions@github.com"
 
+          echo "=== CHECK DIR ==="
+          ls -lah
+
+          echo "=== BUILD QUEUE ==="
           find photos -type f > queue.txt
+
+          echo "=== QUEUE CREATED ==="
+          cat queue.txt
+
           shuf -o queue.txt queue.txt
 
           FILE=$(head -n 1 queue.txt)
@@ -36,12 +49,13 @@ jobs:
 
           cp "$FILE" banner.png
 
+          echo "=== AFTER CHANGES ==="
+          ls -lah
+
           git add -A
+
+          git status
+
           git commit -m "rotate banner" || echo "No changes"
 
-      - name: Push changes
-        run: |
-          cd photos-steam
-
-          git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/luizangelomartins/photos-steam.git
-          git push origin main
+          git push https://x-access-token:${{ secrets.GH_WRITE }}@github.com/luizangelomartins/photos-steam.git
