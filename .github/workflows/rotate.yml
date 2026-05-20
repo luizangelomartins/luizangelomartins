@@ -1,0 +1,62 @@
+name: Rotate Steam Banner (No Repeat Queue)
+
+on:
+  schedule:
+    - cron: "0 */3 * * *"
+  workflow_dispatch:
+
+jobs:
+  rotate:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. repo do perfil
+      - name: Checkout profile repo
+        uses: actions/checkout@v4
+
+      # 2. clonar repo privado
+      - name: Clone private images repo
+        run: |
+          git clone --depth 1 https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/luizangelomartins/photos-steam.git
+
+      # 3. preparar pasta pública
+      - name: Prepare assets folder
+        run: |
+          mkdir -p perfil-assets
+          touch perfil-assets/state.txt
+          touch perfil-assets/queue.txt
+
+      # 4. gerar fila se estiver vazia
+      - name: Build queue if needed
+        run: |
+          if [ ! -s perfil-assets/queue.txt ]; then
+            find photos-steam/photos -type f | shuf > perfil-assets/queue.txt
+          fi
+
+      # 5. pegar próxima imagem da fila
+      - name: Pick next image
+        run: |
+          FILE=$(head -n 1 perfil-assets/queue.txt)
+
+          echo "Selected: $FILE"
+
+          # remove da fila
+          tail -n +2 perfil-assets/queue.txt > tmp && mv tmp perfil-assets/queue.txt
+
+          # salva estado
+          echo "$FILE" > perfil-assets/state.txt
+
+          # aplica banner fixo
+          cp "$FILE" perfil-assets/banner.png
+
+      # 6. commit e push
+      - name: Commit assets
+        run: |
+          cd perfil-assets
+
+          git config user.name github-actions
+          git config user.email actions@github.com
+
+          git add .
+          git commit -m "rotate banner queue" || exit 0
+          git push
