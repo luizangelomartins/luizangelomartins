@@ -13,9 +13,9 @@ jobs:
       - name: Checkout workflow repo
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GH_WRITE }}
+          token: ${{ secrets.GH_WORKFLOW }}
 
-      - name: Clone photos-steam (read)
+      - name: Clone photos-steam (read token)
         run: |
           git clone https://x-access-token:${{ secrets.GH_READ }}@github.com/luizangelomartins/photos-steam.git
 
@@ -44,9 +44,9 @@ jobs:
           git add -A
           git commit -m "rotate banner" || echo "No changes"
 
-      # 🔥 PUSH FORÇADO COM TOKEN DIRETO (NUNCA FALHA COM SET-URL)
-      - name: Push changes (secure)
+      - name: Push changes (write token)
         run: |
           cd photos-steam
 
-          git push https://x-access-token:${{ secrets.GH_WRITE }}@github.com/luizangelomartins/photos-steam.git
+          git remote set-url origin https://x-access-token:${{ secrets.GH_WRITE }}@github.com/luizangelomartins/photos-steam.git
+          git push origin main
