@@ -1,66 +1,67 @@
-name: Rotate Steam Banner (No Repeat Queue)
+name: Rotate Banner (Steam Assets)
 
 on:
   schedule:
     - cron: "0 */3 * * *"
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   rotate:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout do repo principal (onde vai dar push)
-      - name: Checkout profile repo
+      # 1. Checkout do repo principal (só para rodar o workflow)
+      - name: Checkout workflow repo
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_WRITE }}
 
-      # 2. Clonar repo privado de imagens (somente leitura)
-      - name: Clone private images repo
+      # 2. Clonar repo público de assets (ONDE FICA O BANNER)
+      - name: Clone assets repo (photos-steam)
         run: |
-          git clone --depth 1 https://x-access-token:${{ secrets.GH_READ }}@github.com/luizangelomartins/photos-steam.git
-
-      # 3. Preparar estrutura local
-      - name: Prepare assets folder
-        run: |
-          mkdir -p perfil-assets
-          touch perfil-assets/state.txt
-          touch perfil-assets/queue.txt
-
-      # 4. Gerar fila se estiver vazia
-      - name: Build queue if needed
-        run: |
-          if [ ! -s perfil-assets/queue.txt ]; then
-            find photos-steam/photos -type f > perfil-assets/queue.txt
-            shuf -o perfil-assets/queue.txt perfil-assets/queue.txt
-          fi
-
-      # 5. Selecionar próxima imagem
-      - name: Pick next image
-        run: |
-          FILE=$(head -n 1 perfil-assets/queue.txt)
-
-          echo "Selected: $FILE"
-
-          tail -n +2 perfil-assets/queue.txt > perfil-assets/tmp.txt
-          mv perfil-assets/tmp.txt perfil-assets/queue.txt
-
-          echo "$FILE" > perfil-assets/state.txt
-
-          cp "$FILE" perfil-assets/banner.png
-
-      # 6. Commit e push no repo principal
-      - name: Commit assets
-        run: |
+          git clone https://x-access-token:${{ secrets.GH_WRITE }}@github.com/luizangelomartins/photos-steam.git
+          cd photos-steam
           git config user.name "github-actions"
           git config user.email "actions@github.com"
 
-          git add perfil-assets
+      # 3. Garantir fila simples (lista de imagens)
+      - name: Build image list
+        run: |
+          cd photos-steam
 
-          git commit -m "rotate banner queue" || echo "No changes to commit"
+          find photos -type f > queue.txt
+          shuf -o queue.txt queue.txt
+
+      # 4. Selecionar próxima imagem
+      - name: Pick next image
+        run: |
+          cd photos-steam
+
+          FILE=$(head -n 1 queue.txt)
+
+          echo "Selected: $FILE"
+
+          # atualizar fila
+          tail -n +2 queue.txt > tmp.txt
+          mv tmp.txt queue.txt
+
+          # atualizar state (força mudança real)
+          echo "$FILE" > state.txt
+          echo "$(date -u)" >> state.txt
+
+          # atualizar banner
+          cp "$FILE" banner.png
+
+      # 5. Commit e push no repo correto (photos-steam)
+      - name: Commit and push changes
+        run: |
+          cd photos-steam
+
+          git add -A
+
+          echo "=== STATUS ==="
+          git status
+
+          git commit -m "rotate banner" || echo "No changes to commit"
 
           git push
