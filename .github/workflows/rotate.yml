@@ -10,14 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout workflow repo
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GH_WORKFLOW }}
-
-      - name: Clone photos-steam (read token)
+      - name: Clone photos-steam
         run: |
-          git clone https://x-access-token:${{ secrets.GH_READ }}@github.com/luizangelomartins/photos-steam.git
+          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/luizangelomartins/photos-steam.git
 
       - name: Rotate banner
         run: |
@@ -44,9 +39,9 @@ jobs:
           git add -A
           git commit -m "rotate banner" || echo "No changes"
 
-      - name: Push changes (write token)
+      - name: Push changes
         run: |
           cd photos-steam
 
-          git remote set-url origin https://x-access-token:${{ secrets.GH_WRITE }}@github.com/luizangelomartins/photos-steam.git
+          git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/luizangelomartins/photos-steam.git
           git push origin main
