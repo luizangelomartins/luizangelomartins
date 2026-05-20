@@ -2,7 +2,7 @@ name: Rotate Banner (Steam Assets)
 
 on:
   schedule:
-    - cron: "0 */3 * * *"
+    - cron: "0 */12 * * *"
   workflow_dispatch:
 
 permissions:
@@ -52,6 +52,9 @@ jobs:
             echo "$FILE"
             date -u
           } > state.txt
+
+          # remove banner antigo antes de substituir
+          rm -f banner.png
 
           # substitui banner
           cp "$FILE" banner.png
