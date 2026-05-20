@@ -29,12 +29,10 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # cria queue se não existir
           if [ ! -f queue.txt ]; then
             find photos -type f | shuf > queue.txt
           fi
 
-          # recria queue se estiver vazia
           if [ ! -s queue.txt ]; then
             find photos -type f | shuf > queue.txt
           fi
@@ -43,23 +41,18 @@ jobs:
 
           echo "Selected: $FILE"
 
-          # remove item usado da fila
           tail -n +2 queue.txt > queue.tmp || true
           mv queue.tmp queue.txt
 
-          # atualiza estado
           {
             echo "$FILE"
             date -u
           } > state.txt
 
-          # substitui banner
           cp "$FILE" banner.png
 
-          # adiciona alterações
           git add banner.png queue.txt state.txt
 
-          # evita commit vazio
           if git diff --cached --quiet; then
             echo "No changes detected"
             exit 0
@@ -71,3 +64,8 @@ jobs:
         working-directory: photos-steam
         run: |
           git push origin main
+
+      - name: Trigger site deploy (webhook)
+        if: success()
+        run: |
+          curl -X POST "${{ secrets.DEPLOY_WEBHOOK_URL }}"
