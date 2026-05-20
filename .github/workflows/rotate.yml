@@ -10,58 +10,56 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout do repo principal (só para rodar o workflow)
+      # 1. Checkout do repo do workflow (usa WRITE)
       - name: Checkout workflow repo
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_WRITE }}
 
-      # 2. Clonar repo público de assets (ONDE FICA O BANNER)
-      - name: Clone assets repo (photos-steam)
+      # 2. Clone do repo de imagens (usa READ)
+      - name: Clone photos-steam (read token)
         run: |
-          git clone https://x-access-token:${{ secrets.GH_WRITE }}@github.com/luizangelomartins/photos-steam.git
+          git clone https://x-access-token:${{ secrets.GH_READ }}@github.com/luizangelomartins/photos-steam.git
+
+      # 3. Config git no repo clonado
+      - name: Setup git
+        run: |
           cd photos-steam
           git config user.name "github-actions"
           git config user.email "actions@github.com"
 
-      # 3. Garantir fila simples (lista de imagens)
-      - name: Build image list
+      # 4. Criar fila de imagens
+      - name: Build queue
         run: |
           cd photos-steam
-
           find photos -type f > queue.txt
           shuf -o queue.txt queue.txt
 
-      # 4. Selecionar próxima imagem
-      - name: Pick next image
+      # 5. Selecionar próxima imagem
+      - name: Pick image
         run: |
           cd photos-steam
 
           FILE=$(head -n 1 queue.txt)
-
           echo "Selected: $FILE"
 
-          # atualizar fila
           tail -n +2 queue.txt > tmp.txt
           mv tmp.txt queue.txt
 
-          # atualizar state (força mudança real)
           echo "$FILE" > state.txt
           echo "$(date -u)" >> state.txt
 
-          # atualizar banner
           cp "$FILE" banner.png
 
-      # 5. Commit e push no repo correto (photos-steam)
+      # 6. Commit e push (usa WRITE token)
       - name: Commit and push changes
         run: |
           cd photos-steam
 
           git add -A
 
-          echo "=== STATUS ==="
           git status
 
-          git commit -m "rotate banner" || echo "No changes to commit"
+          git commit -m "rotate banner" || echo "No changes"
 
           git push
