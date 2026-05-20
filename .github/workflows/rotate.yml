@@ -20,38 +20,46 @@ jobs:
             exit 1
           fi
 
-      - name: Clone photos-steam
+      - name: Clone private photos repo
         run: |
           git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/luizangelomartins/photos-steam.git
 
+      - name: Clone public assets repo
+        run: |
+          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/luizangelomartins/assets-perfil-steam-photos.git
+
       - name: Rotate banner
         run: |
+          CURRENT_HASH=$(sha256sum assets-perfil-steam-photos/banner.png | cut -d ' ' -f1)
+
           cd photos-steam
+
+          find photos -type f > all.txt
+
+          while true; do
+            FILE=$(shuf -n 1 all.txt)
+
+            NEW_HASH=$(sha256sum "$FILE" | cut -d ' ' -f1)
+
+            if [ "$NEW_HASH" != "$CURRENT_HASH" ]; then
+              break
+            fi
+          done
+
+          echo "Selected: $FILE"
+
+          cp "$FILE" ../assets-perfil-steam-photos/banner.png
+
+      - name: Commit and push public repo
+        run: |
+          cd assets-perfil-steam-photos
 
           git config user.name "github-actions"
           git config user.email "actions@github.com"
 
-          find photos -type f > queue.txt
-          shuf queue.txt -o queue.txt
+          git add banner.png
+          git commit -m "rotate banner ($(date -u '+%Y-%m-%d %H:%M:%S UTC'))" || echo "No changes"
 
-          FILE=$(head -n 1 queue.txt)
+          git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/luizangelomartins/assets-perfil-steam-photos.git
 
-          echo "Selected: $FILE"
-
-          tail -n +2 queue.txt > tmp.txt
-          mv tmp.txt queue.txt
-
-          echo "$FILE" > state.txt
-          echo "$(date -u)" >> state.txt
-
-          cp "$FILE" banner.png
-
-          git add -A
-          git commit -m "rotate banner" || echo "No changes"
-
-      - name: Push changes
-        run: |
-          cd photos-steam
-
-          git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/luizangelomartins/photos-steam.git
           git push origin main
