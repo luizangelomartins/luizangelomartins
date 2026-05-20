@@ -13,16 +13,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout do repositório principal (com token correto)
+      # 1. Checkout do repo principal (onde vai dar push)
       - name: Checkout profile repo
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GH_WRITE }}
 
-      # 2. Clonar repositório privado de imagens
+      # 2. Clonar repo privado de imagens (somente leitura)
       - name: Clone private images repo
         run: |
-          git clone --depth 1 https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/luizangelomartins/photos-steam.git
+          git clone --depth 1 https://x-access-token:${{ secrets.GH_READ }}@github.com/luizangelomartins/photos-steam.git
 
       # 3. Preparar estrutura local
       - name: Prepare assets folder
@@ -39,24 +39,21 @@ jobs:
             shuf -o perfil-assets/queue.txt perfil-assets/queue.txt
           fi
 
-      # 5. Pegar próxima imagem da fila
+      # 5. Selecionar próxima imagem
       - name: Pick next image
         run: |
           FILE=$(head -n 1 perfil-assets/queue.txt)
 
           echo "Selected: $FILE"
 
-          # remove da fila
           tail -n +2 perfil-assets/queue.txt > perfil-assets/tmp.txt
           mv perfil-assets/tmp.txt perfil-assets/queue.txt
 
-          # salva estado atual
           echo "$FILE" > perfil-assets/state.txt
 
-          # copia como banner
           cp "$FILE" perfil-assets/banner.png
 
-      # 6. Commit e push das mudanças
+      # 6. Commit e push no repo principal
       - name: Commit assets
         run: |
           git config user.name "github-actions"
