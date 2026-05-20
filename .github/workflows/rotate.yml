@@ -15,21 +15,17 @@ jobs:
         with:
           token: ${{ secrets.GH_WRITE }}
 
-      - name: Clone photos-steam (READ)
+      - name: Clone photos-steam (read)
         run: |
           git clone https://x-access-token:${{ secrets.GH_READ }}@github.com/luizangelomartins/photos-steam.git
 
-      - name: Configure and rotate
+      - name: Rotate banner
         run: |
           cd photos-steam
 
           git config user.name "github-actions"
           git config user.email "actions@github.com"
 
-          # garante remote com token ANTES de qualquer operação
-          git remote set-url origin https://x-access-token:${{ secrets.GH_WRITE }}@github.com/luizangelomartins/photos-steam.git
-
-          # build queue
           find photos -type f > queue.txt
           shuf -o queue.txt queue.txt
 
@@ -46,8 +42,11 @@ jobs:
           cp "$FILE" banner.png
 
           git add -A
+          git commit -m "rotate banner" || echo "No changes"
 
-          git commit -m "rotate banner" || echo "No changes to commit"
+      # 🔥 PUSH FORÇADO COM TOKEN DIRETO (NUNCA FALHA COM SET-URL)
+      - name: Push changes (secure)
+        run: |
+          cd photos-steam
 
-          # push FORÇADO com remote já autenticado
-          git push
+          git push https://x-access-token:${{ secrets.GH_WRITE }}@github.com/luizangelomartins/photos-steam.git
