@@ -5,37 +5,34 @@ on:
     - cron: "0 */3 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   rotate:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout workflow repo
-        uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GH_WRITE }}
-
-      - name: Clone photos-steam (read)
+      - name: Check token
         run: |
-          git clone https://x-access-token:${{ secrets.GH_READ }}@github.com/luizangelomartins/photos-steam.git
+          if [ -z "${{ secrets.GH_TOKEN }}" ]; then
+            echo "ERROR: GH_TOKEN não disponível"
+            exit 1
+          fi
 
-      - name: Rotate banner inside repo
+      - name: Clone photos-steam
+        run: |
+          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/luizangelomartins/photos-steam.git
+
+      - name: Rotate banner
         run: |
           cd photos-steam
 
           git config user.name "github-actions"
           git config user.email "actions@github.com"
 
-          echo "=== CHECK DIR ==="
-          ls -lah
-
-          echo "=== BUILD QUEUE ==="
           find photos -type f > queue.txt
-
-          echo "=== QUEUE CREATED ==="
-          cat queue.txt
-
-          shuf -o queue.txt queue.txt
+          shuf queue.txt -o queue.txt
 
           FILE=$(head -n 1 queue.txt)
 
@@ -49,13 +46,12 @@ jobs:
 
           cp "$FILE" banner.png
 
-          echo "=== AFTER CHANGES ==="
-          ls -lah
-
           git add -A
-
-          git status
-
           git commit -m "rotate banner" || echo "No changes"
 
-          git push https://x-access-token:${{ secrets.GH_WRITE }}@github.com/luizangelomartins/photos-steam.git
+      - name: Push changes
+        run: |
+          cd photos-steam
+
+          git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/luizangelomartins/photos-steam.git
+          git push origin main
