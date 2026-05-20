@@ -10,37 +10,31 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout do repo do workflow (opcional, mas mantém padrão)
       - name: Checkout workflow repo
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_WRITE }}
 
-      # 2. Clonar repo de assets (READ token)
-      - name: Clone photos-steam repo
+      - name: Clone photos-steam (READ)
         run: |
           git clone https://x-access-token:${{ secrets.GH_READ }}@github.com/luizangelomartins/photos-steam.git
 
-      # 3. Configurar git dentro do repo clonado
-      - name: Setup git
+      - name: Configure and rotate
         run: |
           cd photos-steam
+
           git config user.name "github-actions"
           git config user.email "actions@github.com"
 
-      # 4. Gerar fila de imagens
-      - name: Build queue
-        run: |
-          cd photos-steam
+          # garante remote com token ANTES de qualquer operação
+          git remote set-url origin https://x-access-token:${{ secrets.GH_WRITE }}@github.com/luizangelomartins/photos-steam.git
+
+          # build queue
           find photos -type f > queue.txt
           shuf -o queue.txt queue.txt
 
-      # 5. Selecionar imagem e atualizar arquivos
-      - name: Pick image
-        run: |
-          cd photos-steam
-
           FILE=$(head -n 1 queue.txt)
+
           echo "Selected: $FILE"
 
           tail -n +2 queue.txt > tmp.txt
@@ -51,18 +45,9 @@ jobs:
 
           cp "$FILE" banner.png
 
-      # 6. Commit + PUSH corrigido (FORÇA TOKEN NO REMOTE)
-      - name: Commit and push
-        run: |
-          cd photos-steam
-
           git add -A
-
-          git status
 
           git commit -m "rotate banner" || echo "No changes to commit"
 
-          # 🔥 FIX DEFINITIVO DO 403
-          git remote set-url origin https://x-access-token:${{ secrets.GH_WRITE }}@github.com/luizangelomartins/photos-steam.git
-
+          # push FORÇADO com remote já autenticado
           git push
