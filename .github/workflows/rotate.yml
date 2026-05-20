@@ -5,18 +5,21 @@ on:
     - cron: "0 */3 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   rotate:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout do repositório principal (com permissão de push)
+      # 1. Checkout do repositório principal (com token correto)
       - name: Checkout profile repo
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GH_TOKEN }}
 
-      # 2. Clonar repo privado de imagens
+      # 2. Clonar repositório privado de imagens
       - name: Clone private images repo
         run: |
           git clone --depth 1 https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/luizangelomartins/photos-steam.git
@@ -36,7 +39,7 @@ jobs:
             shuf -o perfil-assets/queue.txt perfil-assets/queue.txt
           fi
 
-      # 5. Selecionar próxima imagem da fila
+      # 5. Pegar próxima imagem da fila
       - name: Pick next image
         run: |
           FILE=$(head -n 1 perfil-assets/queue.txt)
@@ -44,16 +47,16 @@ jobs:
           echo "Selected: $FILE"
 
           # remove da fila
-          tail -n +2 perfil-assets/queue.txt > perfil-assets/tmp_queue.txt
-          mv perfil-assets/tmp_queue.txt perfil-assets/queue.txt
+          tail -n +2 perfil-assets/queue.txt > perfil-assets/tmp.txt
+          mv perfil-assets/tmp.txt perfil-assets/queue.txt
 
           # salva estado atual
           echo "$FILE" > perfil-assets/state.txt
 
-          # copia banner
+          # copia como banner
           cp "$FILE" perfil-assets/banner.png
 
-      # 6. Commit e push das alterações no repo principal
+      # 6. Commit e push das mudanças
       - name: Commit assets
         run: |
           git config user.name "github-actions"
