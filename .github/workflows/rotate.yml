@@ -13,53 +13,61 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check token
-        run: |
-          if [ -z "${{ secrets.GH_TOKEN }}" ]; then
-            echo "ERROR: GH_TOKEN não disponível"
-            exit 1
-          fi
-
-      - name: Clone private photos repo
-        run: |
-          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/luizangelomartins/photos-steam.git
-
-      - name: Clone public assets repo
-        run: |
-          git clone https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/luizangelomartins/assets-perfil-steam-photos.git
+      - name: Checkout photos-steam
+        uses: actions/checkout@v4
+        with:
+          repository: luizangelomartins/photos-steam
+          token: ${{ secrets.GH_TOKEN }}
+          path: photos-steam
+          fetch-depth: 0
 
       - name: Rotate banner
+        working-directory: photos-steam
         run: |
-          CURRENT_HASH=$(sha256sum assets-perfil-steam-photos/banner.png | cut -d ' ' -f1)
+          set -e
 
-          cd photos-steam
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          find photos -type f > all.txt
+          # cria queue se não existir
+          if [ ! -f queue.txt ]; then
+            find photos -type f | shuf > queue.txt
+          fi
 
-          while true; do
-            FILE=$(shuf -n 1 all.txt)
+          # recria queue se estiver vazia
+          if [ ! -s queue.txt ]; then
+            find photos -type f | shuf > queue.txt
+          fi
 
-            NEW_HASH=$(sha256sum "$FILE" | cut -d ' ' -f1)
-
-            if [ "$NEW_HASH" != "$CURRENT_HASH" ]; then
-              break
-            fi
-          done
+          FILE=$(head -n 1 queue.txt)
 
           echo "Selected: $FILE"
 
-          cp "$FILE" ../assets-perfil-steam-photos/banner.png
+          # remove item usado da fila
+          tail -n +2 queue.txt > queue.tmp || true
+          mv queue.tmp queue.txt
 
-      - name: Commit and push public repo
+          # atualiza estado
+          {
+            echo "$FILE"
+            date -u
+          } > state.txt
+
+          # substitui banner
+          cp "$FILE" banner.png
+
+          # adiciona alterações
+          git add banner.png queue.txt state.txt
+
+          # evita commit vazio
+          if git diff --cached --quiet; then
+            echo "No changes detected"
+            exit 0
+          fi
+
+          git commit -m "rotate banner"
+
+      - name: Push changes
+        working-directory: photos-steam
         run: |
-          cd assets-perfil-steam-photos
-
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-
-          git add banner.png
-          git commit -m "rotate banner ($(date -u '+%Y-%m-%d %H:%M:%S UTC'))" || echo "No changes"
-
-          git remote set-url origin https://x-access-token:${{ secrets.GH_TOKEN }}@github.com/luizangelomartins/assets-perfil-steam-photos.git
-
           git push origin main
