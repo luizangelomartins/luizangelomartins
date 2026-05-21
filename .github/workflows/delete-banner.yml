@@ -1,0 +1,54 @@
+name: Delete Banner (Steam Assets)
+
+on:
+  schedule:
+    - cron: "30 23 * * *"  # todo dia às 23:30
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout photos-steam
+        uses: actions/checkout@v4
+        with:
+          repository: luizangelomartins/photos-steam
+          token: ${{ secrets.GH_TOKEN }}
+          path: photos-steam
+          fetch-depth: 0
+
+      - name: Delete banner
+        working-directory: photos-steam
+        run: |
+          set -e
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # remove o banner se existir
+          if [ -f banner.png ]; then
+            rm banner.png
+            echo "Banner deleted"
+          else
+            echo "No banner to delete"
+          fi
+
+          # adiciona alterações
+          git add -A
+
+          # evita commit vazio
+          if git diff --cached --quiet; then
+            echo "No changes detected"
+            exit 0
+          fi
+
+          git commit -m "delete banner"
+      
+      - name: Push changes
+        working-directory: photos-steam
+        run: |
+          git push origin main
