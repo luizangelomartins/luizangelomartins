@@ -1,0 +1,31 @@
+name: Daily GitHub Pages Deploy
+
+# Executa todo dia às 00:05 UTC
+on:
+  schedule:
+    - cron: "5 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v3
+
+      - name: Upload site to GitHub Pages
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: ./  # root da branch main
+
+      - name: Deploy site
+        uses: actions/deploy-pages@v1
