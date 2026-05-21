@@ -2,7 +2,7 @@ name: Rotate Banner (Steam Assets)
 
 on:
   schedule:
-    - cron: "0 */12 * * *"
+    - cron: "55 23 * * *"
   workflow_dispatch:
 
 permissions:
