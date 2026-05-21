@@ -40,12 +40,14 @@ jobs:
           fi
 
           FILE=$(head -n 1 queue.txt)
-
           echo "Selected: $FILE"
 
           # remove item usado da fila
           tail -n +2 queue.txt > queue.tmp || true
           mv queue.tmp queue.txt
+
+          # atualiza histórico de banners
+          echo "$FILE" >> history.txt
 
           # atualiza estado
           {
@@ -53,14 +55,11 @@ jobs:
             date -u
           } > state.txt
 
-          # remove banner antigo antes de substituir
-          rm -f banner.png
-
           # substitui banner
           cp "$FILE" banner.png
 
           # adiciona alterações
-          git add banner.png queue.txt state.txt
+          git add banner.png queue.txt state.txt history.txt
 
           # evita commit vazio
           if git diff --cached --quiet; then
