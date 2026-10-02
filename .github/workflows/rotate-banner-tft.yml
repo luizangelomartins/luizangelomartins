@@ -2,7 +2,7 @@ name: Rotate Banners (TFT Images)
 
 on:
   schedule:
-    - cron: "0,25,50 * * * *"
+    - cron: "*/20 * * * *"
   workflow_dispatch:
 
 permissions:
