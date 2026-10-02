@@ -29,14 +29,14 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Lista todas as imagens disponíveis e sorteia 3
+          # Lista as imagens em ordem, sem aleatoriedade
           mapfile -t FILES < <(
             find images -type f \( \
               -iname "*.png" -o \
               -iname "*.jpg" -o \
               -iname "*.jpeg" -o \
               -iname "*.webp" \
-            \) | shuf | head -n 3
+            \) | sort
           )
 
           # Garante que existem pelo menos 3 imagens
@@ -45,32 +45,58 @@ jobs:
             exit 1
           fi
 
+          TOTAL=${#FILES[@]}
+
+          # Lê o índice salvo anteriormente
+          if [ -f rotation_index.txt ]; then
+            INDEX=$(cat rotation_index.txt)
+          else
+            INDEX=0
+          fi
+
+          # Corrige índice caso esteja fora do limite
+          INDEX=$((INDEX % TOTAL))
+
+          # Seleciona 3 imagens sequenciais, voltando ao início quando necessário
+          FILE1="${FILES[$((INDEX % TOTAL))]}"
+          FILE2="${FILES[$(((INDEX + 1) % TOTAL))]}"
+          FILE3="${FILES[$(((INDEX + 2) % TOTAL))]}"
+
           echo "Imagens selecionadas:"
-          printf '%s\n' "${FILES[@]}"
+          echo "banner1.png = $FILE1"
+          echo "banner2.png = $FILE2"
+          echo "banner3.png = $FILE3"
 
           # Copia para os nomes fixos
-          cp "${FILES[0]}" docs/banner1.png
-          cp "${FILES[1]}" docs/banner2.png
-          cp "${FILES[2]}" docs/banner3.png
+          cp "$FILE1" docs/banner1.png
+          cp "$FILE2" docs/banner2.png
+          cp "$FILE3" docs/banner3.png
 
-          # Registra quais foram usadas
+          # Próximo índice
+          NEXT_INDEX=$(((INDEX + 3) % TOTAL))
+          echo "$NEXT_INDEX" > rotation_index.txt
+
+          # Estado atual
           {
-            echo "banner1.png = ${FILES[0]}"
-            echo "banner2.png = ${FILES[1]}"
-            echo "banner3.png = ${FILES[2]}"
+            echo "banner1.png = $FILE1"
+            echo "banner2.png = $FILE2"
+            echo "banner3.png = $FILE3"
+            echo "Current index: $INDEX"
+            echo "Next index: $NEXT_INDEX"
             echo "Updated: $(date -u)"
           } > state.txt
 
           # Histórico
           {
-            echo "$(date -u) | banner1.png | ${FILES[0]}"
-            echo "$(date -u) | banner2.png | ${FILES[1]}"
-            echo "$(date -u) | banner3.png | ${FILES[2]}"
+            echo "$(date -u) | banner1.png | $FILE1"
+            echo "$(date -u) | banner2.png | $FILE2"
+            echo "$(date -u) | banner3.png | $FILE3"
           } >> history.txt
 
           git add docs/banner1.png \
                   docs/banner2.png \
                   docs/banner3.png \
+                  rotation_index.txt \
                   state.txt \
                   history.txt
 
