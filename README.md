@@ -161,5 +161,15 @@
 </div>
 
 <div align="center">
+  <img width="200em" src="https://luizangelomartins.github.io/image-render-tft/banner4.png">
+  <img width="200em" src="https://luizangelomartins.github.io/image-render-tft/banner5.png">
+  <img width="200em" src="https://luizangelomartins.github.io/image-render-tft/banner6.png">
+</div>
+
+<div align="center">
+  <hr width="500em" />
+</div>
+
+<div align="center">
   <img src="https://raw.githubusercontent.com/luizangelomartins/luizangelomartins/output/github-contribution-grid-snake.svg">
 </div>
