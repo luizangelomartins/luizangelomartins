@@ -39,9 +39,9 @@ jobs:
             \) | sort
           )
 
-          # Garante que existem pelo menos 3 imagens
-          if [ "${#FILES[@]}" -lt 3 ]; then
-            echo "Erro: são necessárias pelo menos 3 imagens na pasta images/"
+          # Garante que existem pelo menos 6 imagens
+          if [ "${#FILES[@]}" -lt 6 ]; then
+            echo "Erro: são necessárias pelo menos 6 imagens na pasta images/"
             exit 1
           fi
 
@@ -57,23 +57,32 @@ jobs:
           # Corrige índice caso esteja fora do limite
           INDEX=$((INDEX % TOTAL))
 
-          # Seleciona 3 imagens sequenciais, voltando ao início quando necessário
+          # Seleciona 6 imagens sequenciais, voltando ao início quando necessário
           FILE1="${FILES[$((INDEX % TOTAL))]}"
           FILE2="${FILES[$(((INDEX + 1) % TOTAL))]}"
           FILE3="${FILES[$(((INDEX + 2) % TOTAL))]}"
+          FILE4="${FILES[$(((INDEX + 3) % TOTAL))]}"
+          FILE5="${FILES[$(((INDEX + 4) % TOTAL))]}"
+          FILE6="${FILES[$(((INDEX + 5) % TOTAL))]}"
 
           echo "Imagens selecionadas:"
           echo "banner1.png = $FILE1"
           echo "banner2.png = $FILE2"
           echo "banner3.png = $FILE3"
+          echo "banner4.png = $FILE4"
+          echo "banner5.png = $FILE5"
+          echo "banner6.png = $FILE6"
 
           # Copia para os nomes fixos
           cp "$FILE1" docs/banner1.png
           cp "$FILE2" docs/banner2.png
           cp "$FILE3" docs/banner3.png
+          cp "$FILE4" docs/banner4.png
+          cp "$FILE5" docs/banner5.png
+          cp "$FILE6" docs/banner6.png
 
           # Próximo índice
-          NEXT_INDEX=$(((INDEX + 3) % TOTAL))
+          NEXT_INDEX=$(((INDEX + 6) % TOTAL))
           echo "$NEXT_INDEX" > rotation_index.txt
 
           # Estado atual
@@ -81,6 +90,9 @@ jobs:
             echo "banner1.png = $FILE1"
             echo "banner2.png = $FILE2"
             echo "banner3.png = $FILE3"
+            echo "banner4.png = $FILE4"
+            echo "banner5.png = $FILE5"
+            echo "banner6.png = $FILE6"
             echo "Current index: $INDEX"
             echo "Next index: $NEXT_INDEX"
             echo "Updated: $(date -u)"
@@ -91,11 +103,17 @@ jobs:
             echo "$(date -u) | banner1.png | $FILE1"
             echo "$(date -u) | banner2.png | $FILE2"
             echo "$(date -u) | banner3.png | $FILE3"
+            echo "$(date -u) | banner4.png | $FILE4"
+            echo "$(date -u) | banner5.png | $FILE5"
+            echo "$(date -u) | banner6.png | $FILE6"
           } >> history.txt
 
           git add docs/banner1.png \
                   docs/banner2.png \
                   docs/banner3.png \
+                  docs/banner4.png \
+                  docs/banner5.png \
+                  docs/banner6.png \
                   rotation_index.txt \
                   state.txt \
                   history.txt
