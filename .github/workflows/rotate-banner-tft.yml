@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: luizangelomartins/image-render-tft
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GH_TOKEN_TFT }}
           path: image-render-tft
           fetch-depth: 0
 
