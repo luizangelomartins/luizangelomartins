@@ -1,0 +1,77 @@
+name: Rotate Banner (TFT Images)
+
+on:
+  schedule:
+    - cron: "0,25,50 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  rotate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout image-render-tft
+        uses: actions/checkout@v4
+        with:
+          repository: luizangelomartins/image-render-tft
+          token: ${{ secrets.GH_TOKEN }}
+          path: image-render-tft
+          fetch-depth: 0
+
+      - name: Rotate banner
+        working-directory: image-render-tft
+        run: |
+          set -e
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Cria a fila se não existir
+          if [ ! -f queue.txt ]; then
+            find images -type f | shuf > queue.txt
+          fi
+
+          # Recria a fila se estiver vazia
+          if [ ! -s queue.txt ]; then
+            find images -type f | shuf > queue.txt
+          fi
+
+          # Seleciona a primeira imagem da fila
+          FILE=$(head -n 1 queue.txt)
+          echo "Selected: $FILE"
+
+          # Remove a imagem usada da fila
+          tail -n +2 queue.txt > queue.tmp || true
+          mv queue.tmp queue.txt
+
+          # Registra no histórico
+          echo "$FILE" >> history.txt
+
+          # Atualiza o estado
+          {
+            echo "$FILE"
+            date -u
+          } > state.txt
+
+          # Substitui o banner
+          cp "$FILE" docs/banner.png
+
+          # Adiciona alterações
+          git add docs/banner.png queue.txt state.txt history.txt
+
+          # Evita commit vazio
+          if git diff --cached --quiet; then
+            echo "No changes detected"
+            exit 0
+          fi
+
+          # Cria commit
+          git commit -m "rotate banner"
+
+      - name: Push changes
+        working-directory: image-render-tft
+        run: |
+          git push origin main
