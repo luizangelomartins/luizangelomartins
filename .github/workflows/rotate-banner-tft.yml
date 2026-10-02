@@ -1,4 +1,4 @@
-name: Rotate Banner (TFT Images)
+name: Rotate Banners (TFT Images)
 
 on:
   schedule:
@@ -21,7 +21,7 @@ jobs:
           path: image-render-tft
           fetch-depth: 0
 
-      - name: Rotate banner
+      - name: Rotate banners
         working-directory: image-render-tft
         run: |
           set -e
@@ -29,38 +29,50 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Cria a fila se não existir
-          if [ ! -f queue.txt ]; then
-            find images -type f | shuf > queue.txt
+          # Lista todas as imagens disponíveis e sorteia 3
+          mapfile -t FILES < <(
+            find images -type f \( \
+              -iname "*.png" -o \
+              -iname "*.jpg" -o \
+              -iname "*.jpeg" -o \
+              -iname "*.webp" \
+            \) | shuf | head -n 3
+          )
+
+          # Garante que existem pelo menos 3 imagens
+          if [ "${#FILES[@]}" -lt 3 ]; then
+            echo "Erro: são necessárias pelo menos 3 imagens na pasta images/"
+            exit 1
           fi
 
-          # Recria a fila se estiver vazia
-          if [ ! -s queue.txt ]; then
-            find images -type f | shuf > queue.txt
-          fi
+          echo "Imagens selecionadas:"
+          printf '%s\n' "${FILES[@]}"
 
-          # Seleciona a primeira imagem da fila
-          FILE=$(head -n 1 queue.txt)
-          echo "Selected: $FILE"
+          # Copia para os nomes fixos
+          cp "${FILES[0]}" docs/banner1.png
+          cp "${FILES[1]}" docs/banner2.png
+          cp "${FILES[2]}" docs/banner3.png
 
-          # Remove a imagem usada da fila
-          tail -n +2 queue.txt > queue.tmp || true
-          mv queue.tmp queue.txt
-
-          # Registra no histórico
-          echo "$FILE" >> history.txt
-
-          # Atualiza o estado
+          # Registra quais foram usadas
           {
-            echo "$FILE"
-            date -u
+            echo "banner1.png = ${FILES[0]}"
+            echo "banner2.png = ${FILES[1]}"
+            echo "banner3.png = ${FILES[2]}"
+            echo "Updated: $(date -u)"
           } > state.txt
 
-          # Substitui o banner
-          cp "$FILE" docs/banner.png
+          # Histórico
+          {
+            echo "$(date -u) | banner1.png | ${FILES[0]}"
+            echo "$(date -u) | banner2.png | ${FILES[1]}"
+            echo "$(date -u) | banner3.png | ${FILES[2]}"
+          } >> history.txt
 
-          # Adiciona alterações
-          git add docs/banner.png queue.txt state.txt history.txt
+          git add docs/banner1.png \
+                  docs/banner2.png \
+                  docs/banner3.png \
+                  state.txt \
+                  history.txt
 
           # Evita commit vazio
           if git diff --cached --quiet; then
@@ -68,8 +80,7 @@ jobs:
             exit 0
           fi
 
-          # Cria commit
-          git commit -m "rotate banner"
+          git commit -m "rotate banners"
 
       - name: Push changes
         working-directory: image-render-tft
